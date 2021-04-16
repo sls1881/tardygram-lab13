@@ -18,6 +18,7 @@ describe('tardygram routes', () => {
   beforeEach(() => {
     return setup(pool);
   });
+
   let post;
   beforeEach(async () => {
     post = await Post.insert({
@@ -50,5 +51,38 @@ describe('tardygram routes', () => {
     const res = await request(app).get('/api/v1/post');
 
     expect(res.body).toEqual([post]);
+  });
+
+  it('Gets a post by ID', async () => {
+    const res = await request(app).get(`/api/v1/post/${post.id}`);
+
+    expect(res.body).toEqual(post);
+  });
+
+  it('Updates a post by ID', async () => {
+    const newPost = { caption: 'My no fun pic' };
+
+    const res = await request(app)
+      .patch(`/api/v1/post/${post.id}`)
+      .send(newPost);
+
+    expect(res.body).toEqual({
+      id: '1',
+      photo: 'http://pic.com/pic.png',
+      caption: 'My no fun pic',
+      tags: 'fun',
+    });
+  });
+
+  it('Delete a post by ID', async () => {
+    const res = await request(app)
+      .delete(`/api/v1/post/${post.id}`)
+
+    expect(res.body).toEqual({
+      id: '1',
+      photo: 'http://pic.com/pic.png',
+      caption: 'My cool pic',
+      tags: 'fun',
+    });
   });
 });

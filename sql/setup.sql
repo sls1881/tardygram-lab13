@@ -8,7 +8,7 @@ CREATE TABLE users (
 );
 CREATE TABLE posts (
   id  BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  github_username TEXT NOT NULL,
+  username TEXT REFERENCES users(github_username),
   post_photo TEXT NOT NULL,
   post_caption TEXT NOT NULL,
   post_tags TEXT NOT NULL

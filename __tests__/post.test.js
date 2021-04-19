@@ -4,7 +4,7 @@ const request = require('supertest');
 const app = require('../lib/app');
 const User = require('../lib/models/User');
 const Post = require('../lib/models/Post');
-const Comment = require('../lib/models/Comment')
+const Comment = require('../lib/models/Comment');
 
 jest.mock('../lib/middleware/ensureAuth.js', () => (req, res, next) => {
   req.user = {
@@ -21,27 +21,27 @@ describe('tardygram routes', () => {
   });
 
   let user;
- let comment;
+  let comment;
   let post;
   beforeEach(async () => {
-user = await User.insert({
-    username: 'test_user',
-    photoUrl: 'http://image.com/image.png'
-})
+    user = await User.insert({
+      username: 'test_user',
+      photoUrl: 'http://image.com/image.png',
+    });
 
     post = await Post.insert({
       photo: 'http://pic.com/pic.png',
       caption: 'My cool pic',
       tags: 'fun',
-      username: user.username
+      username: user.username,
     });
 
     comment = await Comment.insert({
-      post:post.id,
+      post: post.id,
       commentBy: user.username,
-      comment:'Looks great!',
+      comment: 'Looks great!',
     });
-  })
+  });
 
   it('Creates a post from test-user', async () => {
     return request(app)
@@ -66,18 +66,20 @@ user = await User.insert({
   it('Gets a post by ID', async () => {
     const res = await request(app).get(`/api/v1/post/${post.id}`);
 
-    expect(res.body).toEqual({ 
+    expect(res.body).toEqual({
       id: '1',
       photo: 'http://pic.com/pic.png',
       caption: 'My cool pic',
       tags: 'fun',
-      comments: [{
-        id: 1,
-        comment: 'Looks great!',
-        commentBy: 'test_user',
-        post: 1
-      }]});
-
+      comments: [
+        {
+          id: 1,
+          comment: 'Looks great!',
+          commentBy: 'test_user',
+          post: 1,
+        },
+      ],
+    });
   });
 
   it('Updates a post by ID', async () => {
@@ -96,8 +98,7 @@ user = await User.insert({
   });
 
   it('Delete a post by ID', async () => {
-    const res = await request(app)
-      .delete(`/api/v1/post/${post.id}`)
+    const res = await request(app).delete(`/api/v1/post/${post.id}`);
 
     expect(res.body).toEqual({
       id: '1',
@@ -106,5 +107,37 @@ user = await User.insert({
       tags: 'fun',
     });
   });
-});
 
+  it.skip('gets a list of the 10 posts with the most comments', async () => {
+    const res = await request(app).get(`api/v1/popular`);
+
+    expect(res.body).toEqual({ test });
+  });
+
+  // COMMENTS TESTS
+
+  it('Creates a comment from test-user', async () => {
+    return request(app)
+      .post('/api/v1/comment')
+      .send(comment)
+      .then((res) => {
+        expect(res.body).toEqual({
+          post: post.id,
+          id: '2',
+          comment: 'Looks great!',
+          commentBy: 'test_user',
+        });
+      });
+  });
+
+  it('Delete a comment by post id', async () => {
+    const res = await request(app).delete(`/api/v1/comment/${post.id}`);
+
+    expect(res.body).toEqual({
+      post: post.id,
+      id: '1',
+      comment: 'Looks great!',
+      commentBy: 'test_user',
+    });
+  });
+});
